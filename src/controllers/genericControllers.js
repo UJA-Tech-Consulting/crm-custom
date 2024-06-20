@@ -87,11 +87,8 @@ const create = async (req, res) => {
       let fileUrls = {};
 
       if (req.files) {
-        console.log(req.files);
         fileUrls = await uploadFilesToS3(req.files);
       }
-
-      console.log(req.body, "req.body");
       const { objectId, ...data } = req.body;
 
       const newDocument = new Model({

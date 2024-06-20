@@ -1,7 +1,11 @@
 const mongoose = require("mongoose");
 
 const propertySchema = new mongoose.Schema({
-  objectId: { type: mongoose.Schema.Types.ObjectId, ref: "Object" },
+  objectId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Object",
+    required: true,
+  },
   name: { type: String, required: true },
   internalName: { type: String },
   type: {
@@ -12,7 +16,6 @@ const propertySchema = new mongoose.Schema({
       "select",
       "file",
       "image", //aws buckets
-      "images",
       "Number",
       "HTML", //tiny mc
       "url", //regex to vslidate
@@ -35,10 +38,9 @@ const propertySchema = new mongoose.Schema({
   updateDate: { type: Date, default: Date.now },
 });
 
-//make sure to make property names belonging to same object UNIQUE!!
-
-//will modify internal name to have all lowercase and underscores between words
-propertySchema.pre("save", function (next) {
+// Make property names belonging to the same object UNIQUE
+propertySchema.pre("save", async function (next) {
+  // Modify internal name to have all lowercase and underscores between words
   this.internalName = this.name
     .toLowerCase()
     .replace(/[^a-zA-Z0-9\s]/g, "")
@@ -56,7 +58,24 @@ propertySchema.pre("save", function (next) {
     });
   }
 
-  next();
+  try {
+    // Check for duplicate internalName within the same objectId
+    const existingProperty = await mongoose.model("property").findOne({
+      internalName: this.internalName,
+      objectId: this.objectId,
+    });
+
+    if (existingProperty) {
+      const error = new Error(
+        `A property with the internal name "${this.internalName}" already exists for the given object.`
+      );
+      next(error);
+    } else {
+      next();
+    }
+  } catch (error) {
+    next(error);
+  }
 });
 
 const Property = mongoose.model("property", propertySchema);
