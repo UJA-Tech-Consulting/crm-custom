@@ -12,10 +12,12 @@ require("dotenv").config();
 //middleware
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-  origin: true,
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
 
 app.use("/api", genericRoutes);
 app.use("/auth", authRoutes);

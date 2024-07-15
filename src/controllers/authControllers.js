@@ -31,7 +31,7 @@ const handleErrors = (err) => {
   // validation errors
   if (err.message.includes("user validation failed")) {
     Object.values(err.errors).forEach(({ properties }) => {
-      errors[properties.path] = properties.message;
+      errors[properties?.path] = properties?.message;
     });
   }
 
@@ -40,9 +40,9 @@ const handleErrors = (err) => {
 
 const signUp = async (req, res) => {
   try {
-    const { email, password, role } = req.body;
+    const { email, password, role, clientId = 0 } = req.body;
 
-    const user = await User.create({ email, password, role });
+    const user = await User.create({ email, password, role, clientId });
     const token = createToken(user._id, user.role);
 
     res.cookie("jwt", token, { httpOnly: false, maxAge: maxAge });
